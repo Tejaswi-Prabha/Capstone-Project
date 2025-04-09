@@ -1,0 +1,9 @@
+# API Keys (Hardcoded)
+ALPHA_VANTAGE_API_KEY = "AYP563XKONIFZRIR"
+GOOGLE_FINANCE_API_KEY = "460f6c3128a4b21f69bc7218ad4eff6d002042c55e9a79024613a0273616c8bd"
+MARKETSTACK_API_KEY = "4b9bb9665914f00b88e90e6e5fd76ad7" 
+
+# API Base URLs
+ALPHA_VANTAGE_BASE_URL = "https://www.alphavantage.co/query"
+GOOGLE_FINANCE_BASE_URL = "https://serpapi.com/search"
+MARKETSTACK_BASE_URL = "https://api.marketstack.com/v1"

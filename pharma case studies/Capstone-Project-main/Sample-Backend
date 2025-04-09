@@ -1,0 +1,52 @@
+from fastapi import FastAPI, Query
+import requests
+import pandas as pd
+import talib
+from pydantic import BaseModel
+from typing import List
+
+# Initialize FastAPI app
+app = FastAPI()
+
+# Alpha Vantage API Key (Replace with your own key)
+API_KEY = "YOUR_ALPHA_VANTAGE_API_KEY"
+BASE_URL = "https://www.alphavantage.co/query"
+
+# Define a model for stock screening criteria
+class StockFilter(BaseModel):
+    pe_ratio_max: float = None
+    revenue_growth_min: float = None
+    net_profit_min: float = None
+    industry: str = None
+
+# Fetch stock price data
+def get_stock_data(symbol: str, interval: str = "daily"):
+    url = f"{BASE_URL}?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}&apikey={API_KEY}&outputsize=compact"
+    response = requests.get(url).json()
+    data = response.get("Time Series (Daily)", {})
+    df = pd.DataFrame.from_dict(data, orient='index', dtype=float)
+    df.index = pd.to_datetime(df.index)
+    return df
+
+# Compute technical indicators
+def compute_indicators(df: pd.DataFrame):
+    df['RSI'] = talib.RSI(df['4. close'], timeperiod=14)
+    df['MACD'], df['MACD_signal'], _ = talib.MACD(df['4. close'], fastperiod=12, slowperiod=26, signalperiod=9)
+    df['SMA_50'] = talib.SMA(df['4. close'], timeperiod=50)
+    df['SMA_200'] = talib.SMA(df['4. close'], timeperiod=200)
+    return df
+
+# Endpoint to fetch stock data and indicators
+@app.get("/stock/{symbol}")
+def stock_analysis(symbol: str):
+    df = get_stock_data(symbol)
+    df = compute_indicators(df)
+    return df.tail(5).to_dict()
+
+# Endpoint to filter stocks based on fundamental criteria
+@app.post("/screen-stocks")
+def screen_stocks(filters: StockFilter):
+    # This function should query a fundamental stock database
+    return {"message": "Stock screening based on filters", "filters": filters}
+
+# Run the API: uvicorn filename:app --reload
